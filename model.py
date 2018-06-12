@@ -6,6 +6,7 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense, Conv2D, MaxPooling2D, Dropout, Flatten
 from keras.preprocessing.image import ImageDataGenerator
+from keras.callbacks import ReduceLROnPlateau
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
@@ -15,7 +16,7 @@ import matplotlib.pyplot as plot
 #globals
 classes = 10
 epochs = 30
-batch = 88
+batch = 256 #trade off between memory and time taken
 height = 28
 width = 28
 
@@ -49,10 +50,12 @@ def load_train(path):
     x_val = x_val.astype('float32')
 
     #now normalize the pixels to a range of unity
-    x_train /= 255
-    x_val /= 255
+    x_train /= 255.0
+    x_val /= 255.0
 
+    print("TRAIN: Training data has been processed and loaded")
     return x_train, x_val, y_train, y_val
+
 
 def load_test(path):
     # load test data
@@ -69,28 +72,29 @@ def load_test(path):
 
     x_test = x_test.astype('float32')
 
-    x_test /= 255
+    x_test /= 255.0
+
+    print("TEST: Test data has been processed and loaded")
 
     return x_test, y_test, test_csv
+
 
 def conv_model(no_of_classes):
     model = Sequential()
 
-    #now trying an architecture of a CNN - 2 units of 2 convolution layers each, with each followed by a pooling layer, followed by dense layer for classification
+    #now trying an architecture of a CNN - 3 units of 1 convolution layer each, with each followed by a pooling layer, followed by dense layer for classification
+    #for normalized datasets, deep networks are not required, so multiple convolution layers can be stacked, but that had issue with model v2 commit
     model.add(Conv2D(32, (3, 3), input_shape = (28, 28, 1), activation = 'relu', padding = 'same')) #first convolution unit
-    model.add(Conv2D(32, (3, 3), activation = 'relu', padding = 'same'))
     model.add(MaxPooling2D(pool_size=(2,2), strides = 2))
-    model.add(Dropout(0.2))
+    model.add(Dropout(0.25))
 
     model.add(Conv2D(64, (3, 3), activation = 'relu', padding = 'same'))  # second convolution unit
-    model.add(Conv2D(64, (3, 3), activation = 'relu', padding = 'same'))
     model.add(MaxPooling2D(pool_size = (2, 2), strides = 2))
     model.add(Dropout(0.25))
 
-    # model.add(Conv2D(64, (3, 3), activation = 'relu', padding = 'same'))  # third convolution unit
-    # model.add(Conv2D(64, (3, 3), activation = 'relu', padding = 'same'))
-    # model.add(MaxPooling2D(pool_size = (2, 2), strides = 2))
-    # model.add(Dropout(0.25))
+    model.add(Conv2D(64, (3, 3), activation = 'relu', padding = 'same'))  # second convolution unit
+    model.add(MaxPooling2D(pool_size = (2, 2), strides = 2))
+    model.add(Dropout(0.25))
 
     model.add(Flatten())
     model.add(Dense(256, activation = 'relu')) #final dense layer for classification
@@ -98,6 +102,7 @@ def conv_model(no_of_classes):
     model.add(Dense(no_of_classes, activation = 'softmax'))  #final output layer with 10 classes
 
     return model
+
 
 def augment_data(model, x_train, x_test, y_train, y_test):
     # randomly augment data to reduce overfitting
@@ -122,6 +127,16 @@ def augment_data(model, x_train, x_test, y_train, y_test):
     return history, evaluated
 
 
+def learning_rate_annealer():
+    print("Using Learning rate annealer")
+
+    learning_rate_reduction = ReduceLROnPlateau(monitor = 'val_acc',
+                                            patience = 5,
+                                            verbose = 1,
+                                            factor = 0.5,
+                                            min_lr = 0.00001)
+
+
 def plot_accuracy(fit):
     plot.figure(figsize = [8, 8])
     plot.plot(fit.history['val_acc'],'g',linewidth = 2.0)
@@ -131,6 +146,7 @@ def plot_accuracy(fit):
     plot.ylabel('accuracy', fontsize = 14)
     plot.title('accuracy vs epochs', fontsize = 14)
     plot.show()
+
 
 def plot_loss(fit):
     plot.figure(figsize = [8, 8])
@@ -142,6 +158,7 @@ def plot_loss(fit):
     plot.title('loss vs epochs', fontsize = 14)
     plot.show()
 
+
 def prediction(conv, x_test, test):
     predicted = conv.predict_classes(x_test)
 
@@ -151,12 +168,16 @@ def prediction(conv, x_test, test):
     incorrect = np.nonzero(predicted != y_actual)[0]
 
     targets = ["Class {}".format(i) for i in range(classes)]
+
+    print("PREDICTION IS:")
     print(classification_report(y_actual, predicted, target_names = targets))
 
 
 if __name__ == '__main__':
     start = time.time()
-    augment_flag = input("Enter 1 for augmentation, else enter 0: ")
+    augment = input("Enter 1 for augmentation, else enter 0: ")
+    use_annealer = 1
+
     x_train, x_val, y_train, y_val = load_train('fashionmnist/fashion-mnist_train.csv')
     conv = conv_model(classes)
 
@@ -165,7 +186,10 @@ if __name__ == '__main__':
 
     x_test, y_test, test_csv = load_test('fashionmnist/fashion-mnist_test.csv') #load the test dataset
 
-    if augment_flag != 1:
+    if use_annealer == 1:
+        learning_rate_annealer()
+
+    if augment != 1:
         history = conv.fit(x_train, y_train, batch_size = batch,
               epochs = epochs,
               verbose = 1,
@@ -182,6 +206,6 @@ if __name__ == '__main__':
     print('MAIN: Loss for Test set: ', evaluated[0])
     print('MAIN: Accuracy for Test set: ', evaluated[1])
 
-    print("Full process took: " + str(time.time()-start) + " amount of time.")
-
     prediction(conv, x_test, test_csv) #final predicted metrics
+
+    print("Full process took: " + str(time.time()-start) + " amount of time.")
