@@ -9,6 +9,8 @@ from keras.models import Sequential
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 
+import matplotlib.pyplot as plot
+
 #import matplotlib.pyplot as plot
 
 def load_train(path):
@@ -86,6 +88,27 @@ def conv_model(no_of_classes):
 
     return model
 
+def plot_accuracy(fit):
+    plot.figure(figsize = [8, 8])
+    plot.plot(fit.history['val_acc'],'g',linewidth = 2.0)
+    plot.plot(fit.history['acc'],'r', linewidth = 2.0)
+    plot.legend(['Training Accuracy', 'Validation Accuracy'], fontsize = 14)
+    plot.xlabel('epochs ', fontsize = 14)
+    plot.ylabel('accuracy', fontsize = 14)
+    plot.title('accuracy vs epochs', fontsize = 14)
+    plot.show()
+
+def plot_loss(fit):
+    plot.figure(figsize = [8, 8])
+    plot.plot(fit.history['val_loss'],'g', linewidth = 2.0)
+    plot.plot(fit.history['loss'],'r', linewidth = 2.0)
+    plot.legend(['Training loss', 'Validation Loss'], fontsize = 14)
+    plot.xlabel('epochs ', fontsize = 14)
+    plot.ylabel('loss', fontsize = 14)
+    plot.title('loss vs epochs', fontsize = 14)
+    plot.show()
+
+
 
 if __name__ == '__main__':
     start = time.time()
@@ -96,7 +119,7 @@ if __name__ == '__main__':
     conv.compile(loss = 'categorical_crossentropy', optimizer = 'rmsprop', metrics = ['accuracy'])
     print(conv.summary())
 
-    epochs = 50
+    epochs = 5
     batch = 256
 
     history = conv.fit(x_train, y_train, batch_size = batch,
@@ -104,7 +127,10 @@ if __name__ == '__main__':
           verbose = 1,
           validation_data = (x_val, y_val))
 
-    x_test, y_test, data_test = load_test('fashionmnist/fashion-mnist_test.csv')
+    plot_accuracy(history) # plot the accuracy curves
+    plot_loss(history) # plot the loss curves
+
+    x_test, y_test, test_csv = load_test('fashionmnist/fashion-mnist_test.csv')
     evaluated = conv.evaluate(x_test, y_test, verbose=0)
 
     print('MAIN: Loss for Test set: ', evaluated[0])
@@ -116,9 +142,9 @@ if __name__ == '__main__':
     predicted_classes = conv.predict_classes(x_test)
 
     #get the indices to be plotted
-    y_true = data_test.iloc[:, 0]
+    y_true = test_csv.iloc[:, 0]
     correct = np.nonzero(predicted_classes==y_true)[0]
     incorrect = np.nonzero(predicted_classes!=y_true)[0]
 
-    target_names = ["Class {}".format(i) for i in range(classes)]
-    print(classification_report(y_true, predicted_classes, target_names=target_names))
+    targets = ["Class {}".format(i) for i in range(classes)]
+    print(classification_report(y_true, predicted_classes, target_names=targets))
