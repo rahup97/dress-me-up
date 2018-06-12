@@ -143,15 +143,15 @@ def plot_loss(fit):
     plot.show()
 
 def prediction(conv, x_test, test):
-    predicted_classes = conv.predict_classes(x_test)
+    predicted = conv.predict_classes(x_test)
 
     #get all samples for plotting
-    y_true = test.iloc[:, 0]
-    correct = np.nonzero(predicted_classes == y_true)[0]
-    incorrect = np.nonzero(predicted_classes != y_true)[0]
+    y_actual = test.iloc[:, 0]
+    correct = np.nonzero(predicted == y_actual)[0]
+    incorrect = np.nonzero(predicted != y_actual)[0]
 
     targets = ["Class {}".format(i) for i in range(classes)]
-    print(classification_report(y_true, predicted_classes, target_names = targets))
+    print(classification_report(y_actual, predicted, target_names = targets))
 
 
 if __name__ == '__main__':
@@ -185,5 +185,3 @@ if __name__ == '__main__':
     print("Full process took: " + str(time.time()-start) + " amount of time.")
 
     prediction(conv, x_test, test_csv) #final predicted metrics
-
-    
