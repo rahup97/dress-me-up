@@ -76,7 +76,7 @@ def load_test(path):
 def conv_model(no_of_classes):
     model = Sequential()
 
-    #now trying an architecture of a CNN - 3 units of 2 convolution layers each, with each followed by a pooling layer, followed by dense layer for classification
+    #now trying an architecture of a CNN - 2 units of 2 convolution layers each, with each followed by a pooling layer, followed by dense layer for classification
     model.add(Conv2D(32, (5, 5), input_shape = (28,28,1), activation = 'relu', padding = 'same')) #first convolution unit
     model.add(Conv2D(32, (5, 5), activation = 'relu', padding = 'same'))
     model.add(MaxPooling2D(pool_size=(2,2), strides = 2))
@@ -87,10 +87,10 @@ def conv_model(no_of_classes):
     model.add(MaxPooling2D(pool_size = (2, 2), strides = 2))
     model.add(Dropout(0.25))
 
-    model.add(Conv2D(64, (3, 3), activation = 'relu', padding = 'same'))  # third convolution unit
-    model.add(Conv2D(64, (3, 3), activation = 'relu', padding = 'same'))
-    model.add(MaxPooling2D(pool_size = (2, 2), strides = 2))
-    model.add(Dropout(0.25))
+    # model.add(Conv2D(64, (3, 3), activation = 'relu', padding = 'same'))  # third convolution unit
+    # model.add(Conv2D(64, (3, 3), activation = 'relu', padding = 'same'))
+    # model.add(MaxPooling2D(pool_size = (2, 2), strides = 2))
+    # model.add(Dropout(0.25))
 
     model.add(Flatten())
     model.add(Dense(256, activation = 'relu')) #final dense layer for classification
