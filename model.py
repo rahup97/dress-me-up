@@ -16,7 +16,7 @@ import matplotlib.pyplot as plot
 #globals
 classes = 10
 epochs = 30
-batch = 256 #trade off between memory and time taken
+batch = 128 #trade off between memory and time taken
 height = 28
 width = 28
 
@@ -83,7 +83,7 @@ def conv_model(no_of_classes):
     model = Sequential()
 
     #now trying an architecture of a CNN - 3 units of 1 convolution layer each, with each followed by a pooling layer, followed by dense layer for classification
-    #for normalized datasets, deep networks are not required, so multiple convolution layers can be stacked, but that had issue with model v2 commit
+    #for normalized datasets, deep networks are not required, so multiple convolution layers can be stacked, but that was issue with model v2 commit
     model.add(Conv2D(32, (3, 3), input_shape = (28, 28, 1), activation = 'relu', padding = 'same')) #first convolution unit
     model.add(MaxPooling2D(pool_size=(2,2), strides = 2))
     model.add(Dropout(0.25))
@@ -175,7 +175,7 @@ def prediction(conv, x_test, test):
 
 if __name__ == '__main__':
     start = time.time()
-    augment = input("Enter 1 for augmentation, else enter 0: ")
+    do_augment = input("Enter 1 for augmentation, else enter 0: ")
     use_annealer = 1
 
     x_train, x_val, y_train, y_val = load_train('fashionmnist/fashion-mnist_train.csv')
@@ -189,7 +189,11 @@ if __name__ == '__main__':
     if use_annealer == 1:
         learning_rate_annealer()
 
-    if augment != 1:
+    print("No. of Epochs: ", epochs)
+    print("The batch size is: ", batch)
+
+
+    if do_augment != 1:
         history = conv.fit(x_train, y_train, batch_size = batch,
               epochs = epochs,
               verbose = 1,
