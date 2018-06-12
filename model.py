@@ -1,13 +1,15 @@
 import numpy as np
 import pandas as pds
+import time
 
 import keras
 from keras.layers import Dense, Conv2D, MaxPooling2D, Dropout, Flatten
 from keras.models import Sequential
 
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
 
-import matplotlib.pyplot as plot
+#import matplotlib.pyplot as plot
 
 def load_train(path):
     height = 28
@@ -30,10 +32,10 @@ def load_train(path):
     x_train, x_val, y_train, y_val = train_test_split(x, y, test_size = 0.2, random_state = 11)
 
     #reshape input train into images of single channel
-    x_train = x_data.reshape(x_train.shape[0], height, width, 1)
+    x_train = x_train.reshape(x_train.shape[0], height, width, 1)
     x_val = x_val.reshape(x_val.shape[0], height, width, 1)
-    print("TRAIN: The train set is of shape: {} {}".format.x_train.shape)
-    print("TRAIN: The validation set is of shape: {} {}".format.x_val.shape)
+    print("TRAIN: The train set is of shape: " + str(x_train.shape))
+    print("TRAIN: The validation set is of shape: " + str(x_val.shape))
 
     #convert values to float32 type as required
     x_train = x_train.astype('float32')
@@ -63,7 +65,7 @@ def load_test(path):
 
     x_test /= 255
 
-    return x_test, y_test
+    return x_test, y_test, test_csv
 
 def conv_model(no_of_classes):
     model = Sequential()
@@ -86,7 +88,37 @@ def conv_model(no_of_classes):
 
 
 if __name__ == '__main__':
+    start = time.time()
     classes = 10
-    x_train, x_val, y_train, y_val = load_train('fashionmnist\\fashion-mnist_train.csv')
+    x_train, x_val, y_train, y_val = load_train('fashionmnist/fashion-mnist_train.csv')
     conv = conv_model(classes)
-    # ----incomplete----
+
+    conv.compile(loss = 'categorical_crossentropy', optimizer = 'rmsprop', metrics = ['accuracy'])
+    print(conv.summary())
+
+    epochs = 50
+    batch = 256
+
+    history = conv.fit(x_train, y_train, batch_size = batch,
+          epochs = epochs,
+          verbose = 1,
+          validation_data = (x_val, y_val))
+
+    x_test, y_test, data_test = load_test('fashionmnist/fashion-mnist_test.csv')
+    evaluated = conv.evaluate(x_test, y_test, verbose=0)
+
+    print('MAIN: Loss for Test set: ', evaluated[0])
+    print('MAIN: Accuracy for Test set: ', evaluated[1])
+
+    print("Full process took: " + str(time.time()-start) + " amount of time.")
+
+    #get the predictions for the test data
+    predicted_classes = conv.predict_classes(x_test)
+
+    #get the indices to be plotted
+    y_true = data_test.iloc[:, 0]
+    correct = np.nonzero(predicted_classes==y_true)[0]
+    incorrect = np.nonzero(predicted_classes!=y_true)[0]
+
+    target_names = ["Class {}".format(i) for i in range(classes)]
+    print(classification_report(y_true, predicted_classes, target_names=target_names))
