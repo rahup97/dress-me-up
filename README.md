@@ -26,4 +26,8 @@ tensorflow==1.8.0
 
 ## Run the code
 After downloading the dataset, give the required path to the training and test csv files and run the following command
-```python model.py```
+```
+python train.py
+```
+If you want data augmentation of the training samples, then enter 1 at the prompt `Enter 1 for augmentation, else enter 0:`, else enter 0.
+The parameters such as batch size and the number of epochs can be hard coded in [this](train.py) file, by modifying the value of the *batch* and *epochs* variables.
