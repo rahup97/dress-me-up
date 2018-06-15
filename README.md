@@ -13,15 +13,17 @@ You can find the dataset directly in kaggle [Fashion MNiST](https://www.kaggle.c
 ## Requirements
 The libraries and their version that I used to implement this in **Python 3** are:
 
-`matplotlib==2.2.2
+```
+matplotlib==2.2.2
 pandas==0.23.0
 scikit-learn==0.19.1
 scipy==1.1.0
 numpy==1.14.4
 Keras==2.2.0
-tensorflow==1.8.0`
+tensorflow==1.8.0
+```
 
 
 ## Run the code
 After downloading the dataset, give the required path to the training and test csv files and run the following command
-`python model.py`
+```python model.py```
