@@ -8,7 +8,7 @@ from keras.callbacks import ReduceLROnPlateau
 
 from sklearn.model_selection import train_test_split
 
-import metrics
+import losses
 from model import Model
 
 #globals
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     conv.compile(loss = 'categorical_crossentropy', optimizer = 'rmsprop', metrics = ['accuracy'])
     print(conv.summary()) #print the summary of the model
 
-    x_test, y_test, test_csv = metrics.load_test('fashionmnist/fashion-mnist_test.csv', height, width) #load the test dataset
+    x_test, y_test, test_csv = losses.load_test('fashionmnist/fashion-mnist_test.csv', height, width) #load the test dataset
 
     if use_annealer == 1:
         learning_rate_annealer()
@@ -122,12 +122,12 @@ if __name__ == '__main__':
     else:
         history, evaluated = augment_data(conv, x_train, x_test, y_train, y_test)
 
-    metrics.plot_accuracy(history) # plot the accuracy curves
-    metrics.plot_loss(history) # plot the loss curves
+    losses.plot_accuracy(history) # plot the accuracy curves
+    losses.plot_loss(history) # plot the loss curves
 
     print('MAIN: Loss for Test set: ', evaluated[0])
     print('MAIN: Accuracy for Test set: ', evaluated[1])
 
-    metrics.prediction(conv, x_test, test_csv, classes) #final predicted metrics
+    losses.prediction(conv, x_test, test_csv, classes) #final predicted metrics
 
     print("Full process took: " + str(time.time()-start) + " amount of time.")
