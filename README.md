@@ -8,7 +8,9 @@ The MNIST dataset has been one of the most overused datasets in Deep Learning. T
 
 Hence, the team at Zalando research have come up with a new dataset called **Fashion MNIST**, that is comprised of 60,000 training samples and 10,000 test samples, very much similar to the handwritten dataset. Here also, each image is in grayscale and has dimensions of 28x28 pixels. The images essentially belong to 10 different classes such as shirts, trousers, dresses, sneakers, etc.
 
-![Glimpse of the dataset](assets/mnist.jpg)
+<p align="center">
+  <img width="450" height="400" src="assets/mnist.jpg">
+</p>
 
 You can find the dataset directly in kaggle [Fashion MNiST](https://www.kaggle.com/zalando-research/fashionmnist/)
 
